@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:background="#E2FFFFFF"
+    android:padding="10dp"
+    android:gravity="center">
+
+    <TextView
+        android:id="@+id/overlay_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="You've exceeded your app usage limit"
+        android:textColor="#2B2A2A"
+        android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/close_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Close"
+        android:textColor="#FFFFFF"
+        android:paddingHorizontal="100sp"
+        android:layout_marginTop="30sp"
+
+        android:background="#4268D8" />
+
+</LinearLayout>

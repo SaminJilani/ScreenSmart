@@ -1,21 +1,23 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
 
-import React from 'react';
+import { DrawerActions, NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, { useEffect } from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  Button,
+  Image,
+  NativeModules,
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TouchableOpacity,
   useColorScheme,
   View,
 } from 'react-native';
+
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import {
   Colors,
@@ -24,75 +26,186 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import MainScreen from './src/screens/MainScreen';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { CustomTabBar } from './src/HelperFunctions/helperJSX';
+import { Provider } from 'react-redux';
+import { store } from './src/Redux/store';
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import AppUsageLimitScreen from './src/screens/AppUsageLimit';
+import { height, screenWidth, width } from './src/units';
+import { colors, fonts, icons } from './src/assets';
+import { storage } from './src/AsyncStorageHelper';
+import { initiateAppUsageLimits } from './src/HelperFunctions/helperFunctions';
+import UsageStatistics from './src/screens/UsageStatistics';
+import AppUsageDetails from './src/screens/AppUsageDetails';
+import AppSessionInfo from './src/screens/AppSessionInfo';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Pressable } from '@react-native-material/core';
+import UsageSessionInfo from './src/screens/UsageSessionInfo';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+const { AppUsageModule } = NativeModules;
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+
+
+const Root = createNativeStackNavigator();
+const Apps = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+const Drawer = createDrawerNavigator();
+
+
+
+const CustomDrawerContent = (props) => {
+    return (
+      <DrawerContentScrollView {...props}>
+        <View style={styles.drawerHeader}>
+           <Image source={icons.appIcon} style={{width:width*26,height:height*12,resizeMode:'contain'}} />
+          <Text style={styles.headerText}>Screen Smart</Text>
+        </View>
+      <Pressable style={styles.logoutButton} 
+        onPress={() =>
+          {props?.navigation?.navigate('AppUsageLimitScreen')}}>
+            <MaterialIcons name={"lock-clock"} color={"black"} size={25}/> 
+          <Text style={styles.firstText}>App Usage Limits</Text>
+      </Pressable>
+      </DrawerContentScrollView>
+    );
+};
+
+const CustomHeader = ({ title, navigation }) => {
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+    <View style={styles.headerContainer}>
+      <View style={{marginLeft: 15,position:'absolute',top:12,left:0}}>
+      <Pressable onPress={() => navigation.toggleDrawer()} 
+          >
+            <Ionicons name="menu" size={25} color={colors.primary} />
+          </Pressable>
+          </View>
+      <View 
+      style={{
+        alignSelf:'center',
+        alignItems:'center',
+        justifyContent:'center',
+        flexDirection:'row',
+        
+      }}
+      >
+          <Image source={icons.appIcon} style={{width:width*10,height:height*5,resizeMode:'contain'}} />
+          <Text style={styles.headerTitle}>{title}</Text>
+      </View>
     </View>
   );
-}
+};
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+const FetchUsageLimitApps = async () => {
+    try {
+      const list = await storage.getString('usage_limit_apps');
+      if(list && JSON.parse(list).length>0){
+        const result = JSON.parse(list).map(({appName, packageName,allowedTimeLimit}) => ({appName, packageName,allowedTimeLimit}));
+        console.log(`FetchUsageLimitApps RootStack ${JSON.stringify(result)}`)
+        initiateAppUsageLimits(result);
+      }
+      else{
+        console.log(`FetchUsageLimitApps2 RootStack ${list}`)
+      }
+   
+      // START SERVICE HERE!
+    } catch (error) {
+      console.log(`FetchUsageLimitApps error==> ${error}`);
+    }
   };
 
+const NotificationService = async () => {
+    try {
+      
+      await AppUsageModule.startUsageNotificationService();
+      // await AppUsageModule.stopUsageNotificationService();
+      // START SERVICE HERE!
+    } catch (error) {
+      console.log(`NotificationService error==> ${error}`);
+    }
+  };
+
+export const RootStack = () => {
+
+NotificationService();
+FetchUsageLimitApps();
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <Drawer.Navigator
+      initialRouteName="Home"
+      // screenOptions={{
+      //   headerShown: true,
+      //   swipeEdgeWidth: 0,
+      // }}
+      screenOptions={({ navigation }) => ({
+        header: ({ route }) => (
+          <CustomHeader title={'Screen Smart'} navigation={navigation} />
+        ),
+        swipeEdgeWidth: 0,
+      })}
+      drawerContent={props => <CustomDrawerContent {...props} />}
+      >
+      <Drawer.Screen name="Home" component={TabsNavigation} />
+      <Drawer.Screen name="AppUsageLimitScreen" component={AppUsageLimitScreen} />
+    </Drawer.Navigator>
+  );
+};
+
+
+export const AppStack = () => {
+  return (
+    <Apps.Navigator
+      initialRouteName="MainScreen"
+      screenOptions={{
+        headerShown: false,
+      }}>
+      <Apps.Screen name="MainScreen" component={MainScreen} />
+      <Apps.Screen name="UsageStatistics" component={UsageStatistics} options={{animation: 'fade'}}/>
+      <Apps.Screen name="UsageSessionInfo" component={UsageSessionInfo} />
+      <Apps.Screen name="AppUsageDetails" component={AppUsageDetails} options={{animation: 'fade'}}/>
+      <Apps.Screen name="AppSessionInfo" component={AppSessionInfo} />
+      
+      
+      
+    </Apps.Navigator>
+  );
+};
+
+const TabsNavigation = () => {
+  return(
+  <Tab.Navigator tabBar={(props) => <CustomTabBar {...props} />} initialRouteName='MainTab' screenOptions={{headerShown: false}} >
+    <Tab.Screen component={AppStack} name="MainTab" />
+  </Tab.Navigator>
+  )
+}
+
+// const RootStack = () => {
+//   return (
+//     <Root.Navigator initialRouteName='Home' screenOptions={{headerShown: false}}>
+//         <Root.Screen name="Home" component={TabsNavigation} />
+//     </Root.Navigator>
+//   );
+// };
+
+const Navigation = () => {
+  return (
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <RootStack />
+      </NavigationContainer>
+    </SafeAreaProvider>
+  );
+};
+
+const  App = () => {
+
+  return (
+    <Provider store={store}>
+    <Navigation/>
+    </Provider>
   );
 }
 
@@ -112,6 +225,49 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: '700',
+  },
+  drawerHeader: {
+    height: height*21,
+    backgroundColor: colors.white,
+    borderBottomWidth:0.5,
+    elevation:1.5,
+    borderColor:colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color:colors.primary
+  },
+  logoutButton: {
+    marginTop: height*5,
+    // padding: 10,
+    marginLeft: width*7,
+    backgroundColor: '#ffff',
+    flexDirection:'row'
+  },
+  firstText: {
+    color: '#000',
+    fontSize: 16,
+    marginLeft:width*2,
+    fontFamily:fonts.notosans
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent:'center',
+    backgroundColor: colors.white,
+    width:screenWidth,
+    height: height*7.2,
+    paddingHorizontal: 10,
+  },
+  headerTitle: {
+    color: colors.primary,
+    fontSize: 14,
+    fontFamily:fonts.notosansBold,
+    marginLeft: width
+    
   },
 });
 

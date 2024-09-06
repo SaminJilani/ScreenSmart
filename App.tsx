@@ -55,8 +55,6 @@ const Tab = createBottomTabNavigator();
 
 const Drawer = createDrawerNavigator();
 
-
-
 const CustomDrawerContent = (props) => {
     return (
       <DrawerContentScrollView {...props}>

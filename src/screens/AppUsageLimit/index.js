@@ -285,6 +285,15 @@ const AppUsageLimitScreen = ({route, navigation: {navigate}, navigation}) => {
     handleClosePress();
   };
 
+  const handleAddbutton = async () => {
+    const granted = await AppUsageModule.checkIfOverlayPermissionGranted();
+    if (granted) {
+      setSelectedApp(null);
+      setSelectedMinute(0);
+      setSelectedHour(0);
+      handleOpenPress();
+    }
+  };
   return (
     <View style={styles.container}>
       <Text
@@ -311,10 +320,7 @@ const AppUsageLimitScreen = ({route, navigation: {navigate}, navigation}) => {
           pressEffect="android-ripple"
           android_ripple={{borderless: true}}
           onPress={() => {
-            setSelectedApp(null);
-            setSelectedMinute(0);
-            setSelectedHour(0);
-            handleOpenPress();
+            handleAddbutton();
           }}>
           <Text
             style={{color: colors.white, fontFamily: fonts.notosansSemiBold}}>

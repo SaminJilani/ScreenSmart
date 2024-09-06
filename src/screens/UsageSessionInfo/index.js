@@ -1,6 +1,14 @@
-import {FlatList, Image, SectionList, Text, View} from 'react-native';
+import {
+  Button,
+  FlatList,
+  Image,
+  SectionList,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import {styles} from './styles';
-import {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {NativeModules} from 'react-native';
 import {useSelector} from 'react-redux';
 import {
@@ -15,6 +23,11 @@ import {height, width} from '../../units';
 const {AppUsageModule} = NativeModules;
 
 const UsageSessionInfo = ({route, navigation: {navigate}, navigation}) => {
+  const [count, setCount] = useState(0);
+  const [text, setText] = useState('');
+  const handleIncrement = () => {
+    setCount(prevCount => 0 + 1);
+  };
   const selectedDate = useSelector(state => state?.reducer?.selected_date);
   const [appSessions, setAppSessions] = useState([]);
   useEffect(() => {
@@ -104,15 +117,26 @@ const UsageSessionInfo = ({route, navigation: {navigate}, navigation}) => {
     </Text>
   );
 
+  // const ChildComponent = React.memo(
+  //   ({onClick}) => {
+  //     console.log('ChildComponent rendered');
+  //     return <Button title="Increment" onPress={()} />;
+  //   },
+  //   (prevProps, nextProps) => {
+  //     // Custom comparison function to prevent re-render if onClick hasn't changed
+  //     return true;
+  //   },
+  // );
+
   return (
     <View style={styles.container}>
-      {/* <FlatList
+      <FlatList
         style={{marginTop: height * 3}}
         contentContainerStyle={{paddingVertical: height * 2}}
         data={appSessions}
         keyExtractor={item => item.id}
         renderItem={renderItem}
-      /> */}
+      />
 
       <SectionList
         sections={appSessions}
@@ -128,3 +152,25 @@ const UsageSessionInfo = ({route, navigation: {navigate}, navigation}) => {
 };
 
 export default UsageSessionInfo;
+
+// <View style={styles.container}>
+/* <FlatList
+        style={{marginTop: height * 3}}
+        contentContainerStyle={{paddingVertical: height * 2}}
+        data={appSessions}
+        keyExtractor={item => item.id}
+        renderItem={renderItem}
+      /> */
+
+/* 
+      <SectionList
+        sections={appSessions}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{paddingVertical: height * 2}}
+        keyExtractor={(item, index) => String(index)}
+        renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
+        stickySectionHeadersEnabled={false} // Optional: if you don't want sticky headers
+      /> */
+
+// </View>

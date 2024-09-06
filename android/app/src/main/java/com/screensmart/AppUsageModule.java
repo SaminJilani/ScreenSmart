@@ -1446,7 +1446,8 @@ public void getAppUsage(String startDate, String endDate, Promise promise) {
                 Log.d("checkAndStartServiceRunning2", appLimits.toString());
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
                 intent.setData(Uri.parse("package:" + getReactApplicationContext().getPackageName()));
-                intent.putExtra("appLimits", appLimits.toString());
+//                intent.putExtra("appLimits", appLimits.toString());
+//                Log.d("appLimits", appLimits.toString());
                 getCurrentActivity().startActivityForResult(intent, REQUEST_CODE);
             } else {
                 Log.d("checkAndStartServiceRunning3", appLimits.toString());
@@ -1457,6 +1458,20 @@ public void getAppUsage(String startDate, String endDate, Promise promise) {
             startService(appLimits);
         }
     }
+
+    @ReactMethod
+    public void checkIfOverlayPermissionGranted(Promise promise) {
+        if (!Settings.canDrawOverlays(getReactApplicationContext())) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+            intent.setData(Uri.parse("package:" + getReactApplicationContext().getPackageName()));
+            getCurrentActivity().startActivityForResult(intent, REQUEST_CODE);
+            promise.resolve(false);
+        } else {
+            promise.resolve(true);
+        }
+    }
+
+
     @ReactMethod
     public void stopService(Promise promise) {
         try {

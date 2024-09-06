@@ -1,4 +1,11 @@
-import {BackHandler, Image, SectionList, Text, View} from 'react-native';
+import {
+  AppState,
+  BackHandler,
+  Image,
+  SectionList,
+  Text,
+  View,
+} from 'react-native';
 import {height, screenWidth, width} from '../../units';
 import {styles} from './styles';
 import {colors, fonts} from '../../assets';
